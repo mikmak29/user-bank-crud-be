@@ -1,0 +1,10 @@
+const ResponseHandler = (res, success, statusCode, details = {}) => {
+    return res.status(statusCode).json({
+        success: success,
+        statusCode: statusCode,
+        details,
+        timestamp: new Date().toISOString(),
+    });
+};
+
+export default ResponseHandler;
