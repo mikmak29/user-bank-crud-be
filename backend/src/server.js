@@ -1,54 +1,37 @@
-import express from "express";
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import cors from 'cors';
+import asyncHandler from 'express-async-handler';
 import cookie from 'cookie-parser';
-import asyncHandler from "express-async-handler";
-import throwHTTPError from "./utils/throwHTTPError.js";
-import ResponseHandler from "./utils/ResponseHandler.js";
-import errorHandler from "./middleware/errorHandler.js";
+import compression from 'compression';
+import express from 'express';
+
 import globalErrorHandler from "./middleware/globalErrorHandler.js";
-import NotFoundHandler from "./errors/NotFoundHandler.js";
+import NotFoundHandler from './errors/NotFoundHandler.js';
+import userRoute from './routes/user.routes.js';
+import connectDB from "./config/database.js";
+
+dotenv.config();
 
 const app = express();
-const port = 8000 || 8100;
+const PORT = process.env.PORT || 8100;
 
-app.use(express.json());
+app.use(helmet());
+app.use(cors());
 app.use(cookie());
+app.use(express.json());
+app.use(compression());
 
-app.get("/api/user", asyncHandler(async (req, res) => {
-	const user = req.cookies?.userDatas;
+app.use("/api/user", userRoute); // -> route
 
-	console.log(user);
-	if (!user) {
-		return errorHandler('No data found.', 404, "server.js");
-	}
-
-	ResponseHandler(res, true, 200, user);
-}));
-
-app.post("/api/user", asyncHandler(async (req, res) => {
-	const { name, role } = req.body;
-
-	if (!name || !role) {
-		return errorHandler("All fields are required.", 404, "POST Method at server.js");
-	}
-	const userData = {
-		name: name,
-		role: role
-	};
-
-	res.cookie("userData", userData, {
-		httpOnly: true,
-		secure: true,
-		sameSite: "strict",
-		path: '/api'
-	});
-
-	ResponseHandler(res, true, 201, userData);
-}));
-
-app.use(NotFoundHandler);
-
+app.use(NotFoundHandler); // -> Handles unexpected writing of path
 app.use(globalErrorHandler);
 
-app.listen(port, () => {
-	console.log(`Server is running at PORT ${port}`);
+const serverStarter = asyncHandler(async () => {
+	await connectDB();
+	app.listen(PORT, () => {
+		console.log(`Server is listening at port ${PORT}`);
+	});
 });
+
+serverStarter();

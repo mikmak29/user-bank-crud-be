@@ -15,7 +15,7 @@ const globalErrorHandler = (error, req, res, next) => {
         }
     };
 
-    res.status(200).json(errorFound);
+    res.status(statusCode).json(errorFound);
 };
 
 export default globalErrorHandler;
