@@ -19,18 +19,9 @@ const authToken = asyncHandler(async (req, res, next) => {
             return errorHandler("Invalid token", 401, "authToken.js");
         }
 
-        const { work_experience: { frontend, backend, database } } = decoded;
-
         const userPayload = {
-            username: decoded.username,
             email: decoded.email,
             country: decoded.country,
-            work_experience: {
-                frontend: frontend,
-                backend: backend,
-                database: database,
-            },
-            isWFHType: decoded.isWFHType
         };
 
         req.userData = userPayload;

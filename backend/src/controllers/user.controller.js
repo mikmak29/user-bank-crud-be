@@ -25,16 +25,7 @@ export const createUserData = asyncHandler(async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userData = result.data;
-    const { username, email, country, work_experience: { frontend, backend, database }, isWFHType } = userData; // Extract all the all the object data
-
-    const accessToken = jwt.sign(userData, process.env.PRIVATE_ACCESS_TOKEN, { expiresIn: "2m" });
-
-    res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        path: "/api/user"
-    });
+    const { email, country } = userData; // Extract all the all the object data
 
     res.cookie("storedUserData", userData, {
         httpOnly: true,
@@ -44,33 +35,60 @@ export const createUserData = asyncHandler(async (req, res) => {
     });
 
     await User.create({
-        username,
         email,
         password: hashedPassword,
-        country,
-        work_experience: {
-            frontend,
-            backend,
-            database
-        },
-        isWFHType
+        country
     });
-    ResponseHandler(res, "success", 201, { data: userData });
+
+    ResponseHandler(res, "success", 201, {
+        message: "Registered successfully",
+        data: null,
+    });
 });
 
-export const fetchAllUsers = asyncHandler(async (req, res) => {
+export const loginUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return errorHandler("Invalid credentials.", 401, "user.controller.js");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return errorHandler("Invalid credentials.", 401, "user.controller.js");
+    }
+
+    const userPayload = {
+        email: user.email,
+        country: user.country
+    };
+
+    const accessToken = jwt.sign(userPayload, process.env.PRIVATE_ACCESS_TOKEN, { expiresIn: "2m" });
+
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/api/user"
+    });
+
+    await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
+
+    ResponseHandler(res, "success", 200, {
+        message: "Login successfully.",
+        data: null
+    });
+});
+
+export const currentUserData = asyncHandler(async (req, res) => {
     const userData = req.userData;
 
+    console.log(userData);
     if (!userData) {
         return errorHandler("No data found.", 404);
     }
 
-    ResponseHandler(res, "success", 201, { data: userData });
-
-});
-
-export const updateUserDataById = asyncHandler(async (req, res) => {
-    const userData = req.cookies?.userData;
-
-    res.json(userData);
+    ResponseHandler(res, "success", 200, { data: userData });
 });

@@ -3,7 +3,6 @@ const ResponseHandler = (res, success, statusCode, details = {}) => {
         success: success,
         statusCode: statusCode,
         details,
-        createdAt: new Date().toISOString(),
     });
 };
 

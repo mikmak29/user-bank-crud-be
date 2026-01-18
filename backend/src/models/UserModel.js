@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
-        username: {
-            type: String,
-            required: true
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
         },
         email: {
             type: String,
@@ -18,25 +17,14 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        work_experience: {
-            frontend: {
-                type: [String],
-            },
-            backend: {
-                type: [String],
-            },
-            database: {
-                type: [String],
-            },
+        lastLogin: {
+            type: Date,
+            default: null
         },
-        isWFHType: {
-            type: String,
-            required: true
-        }
     },
     {
         timestamps: true,
-        versionKey: false
+        versionKey: false,
     }
 );
 
