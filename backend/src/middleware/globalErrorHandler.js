@@ -11,7 +11,8 @@ const globalErrorHandler = (error, req, res, next) => {
         errorCode: matchedError.errorCode,
         details: {
             message: error.message,
-            path: error.path,
+            pathURL: req.originalUrl || req.url,
+            filePath: error.filePath
         }
     };
 

@@ -1,7 +1,7 @@
-const errorHandler = (errorMessage, statusCode, path) => {
+const errorHandler = (errorMessage, statusCode, filePath) => {
     const error = new Error(errorMessage);
     error.statusCode = statusCode;
-    error.path = path;
+    error.filePath = filePath;
     throw error;
 };
 
