@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 
 import errorHandler from "../middleware/errorHandler.js";
 import ResponseHandler from '../utils/ResponseHandler.js';
+import { accessTokenHandler, refreshTokenHandler } from '../utils/accessToken.js';
 import userSchema from "../schemas/user.schema.js";
 import User from '../models/UserModel.js';
 
@@ -37,7 +38,8 @@ export const createUserData = asyncHandler(async (req, res) => {
     await User.create({
         email,
         password: hashedPassword,
-        country
+        country,
+        isActive: true
     });
 
     ResponseHandler(res, "success", 201, {
@@ -65,13 +67,22 @@ export const loginUser = asyncHandler(async (req, res) => {
         country: user.country
     };
 
-    const accessToken = jwt.sign(userPayload, process.env.PRIVATE_ACCESS_TOKEN, { expiresIn: "2m" });
+    const accessToken = await accessTokenHandler(userPayload);
+
+    const refreshToken = await refreshTokenHandler(userPayload);
 
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
         path: "/api/user"
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/api/user/refreshToken"
     });
 
     await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
@@ -82,13 +93,60 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
 });
 
+export const refreshToken = asyncHandler(async (req, res) => {
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+        return errorHandler("Unauthorized", 401, "user.controller.js");
+    }
+
+    try {
+        const verifyToken = jwt.verify(token, process.env.PRIVATE_REFRESH_ACCESS_TOKEN);
+
+        const user = verifyToken;
+
+        const userPayload = {
+            email: user.email,
+            country: user.country
+        };
+
+        const accessToken = await accessTokenHandler(userPayload);
+
+        const refreshToken = await refreshTokenHandler(userPayload);
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            path: "/api/user"
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            path: "/api/user/refreshToken"
+        });
+
+        ResponseHandler(res, "success", 200, {
+            message: "Refresh token successfully.",
+            data: null
+        });
+
+    } catch (error) {
+        return errorHandler(error.message, 401, "user.controller.js");
+    }
+});
+
 export const currentUserData = asyncHandler(async (req, res) => {
     const userData = req.userData;
 
-    console.log(userData);
     if (!userData) {
         return errorHandler("No data found.", 404);
     }
 
-    ResponseHandler(res, "success", 200, { data: userData });
+    ResponseHandler(res, "success", 200, {
+        message: "Retrieve data successfully.",
+        data: null
+    });
 });

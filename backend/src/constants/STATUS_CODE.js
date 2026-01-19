@@ -17,6 +17,9 @@ export const STATUS_CODES = {
     500: {
         errorCode: "INTERNAL_SERVER_ERROR",
     },
+    503: {
+        errorCode: "SERVICE_UNAVAILABLE"
+    }
 };
 
 export const NOT_FOUND = 404;
