@@ -3,15 +3,15 @@ import asyncHandler from "express-async-handler";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 
+import * as userService from '../services/user.service.js';
 import errorHandler from "../middleware/errorHandler.js";
 import ResponseHandler from '../utils/ResponseHandler.js';
 import { accessTokenHandler, refreshTokenHandler } from '../utils/accessToken.js';
 import userSchema from "../schemas/user.schema.js";
-import User from '../models/UserModel.js';
 
 dotenv.config();
 
-export const createUserData = asyncHandler(async (req, res) => {
+export const registerUserData = asyncHandler(async (req, res) => {
     const result = await userSchema.safeParseAsync(req.body);
 
     if (!result.success) {
@@ -26,7 +26,13 @@ export const createUserData = asyncHandler(async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userData = result.data;
-    const { email, country } = userData; // Extract all the all the object data
+    const { email, country } = userData; // Extract all the data, password is excluded
+
+    const validateEmail = await userService.isEmailExist(email);
+
+    if (validateEmail) {
+        return errorHandler("This Email already exists.", 409, "user.controller.js");
+    }
 
     res.cookie("storedUserData", userData, {
         httpOnly: true,
@@ -35,7 +41,7 @@ export const createUserData = asyncHandler(async (req, res) => {
         path: "/api/user"
     });
 
-    await User.create({
+    await userService.registerUser({
         email,
         password: hashedPassword,
         country,

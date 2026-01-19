@@ -9,8 +9,9 @@ const globalErrorHandler = (error, req, res, next) => {
         success: false,
         statusCode: statusCode,
         errorCode: matchedError.errorCode,
-        details: {
-            message: error.message,
+        message: error.message,
+
+        debug: {
             pathURL: req.originalUrl || req.url,
             filePath: error.filePath
         }

@@ -1,8 +1,10 @@
 export const STATUS_CODES = {
     400: {
+        errorMessage: "You don't have",
         errorCode: "BAD_REQUEST",
     },
     401: {
+        errorMessage: "You don't have permission",
         errorCode: "UNAUTHORIZED",
     },
     403: {
