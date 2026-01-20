@@ -20,6 +20,7 @@ const authToken = asyncHandler(async (req, res, next) => {
         }
 
         const userPayload = {
+            id: decoded.id,
             email: decoded.email,
             country: decoded.country,
         };

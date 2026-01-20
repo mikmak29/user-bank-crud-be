@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 
 import * as userService from '../services/user.service.js';
+import * as transactionService from '../services/transaction.service.js';
 import errorHandler from "../utils/errorHandler.js";
 import ResponseHandler from '../utils/ResponseHandler.js';
 import { accessTokenHandler, refreshTokenHandler } from '../utils/accessToken.js';
@@ -70,6 +71,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     }
 
     const userPayload = {
+        id: user._id,
         email: user.email,
         country: user.country
     };
@@ -113,6 +115,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
         const user = verifyToken;
 
         const userPayload = {
+            id: user.id,
             email: user.email,
             country: user.country
         };
@@ -147,7 +150,6 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
 export const updateUserData = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const loggedInUserEmail = req.userData?.email;
 
     validateObjectId(id);
 
@@ -158,7 +160,7 @@ export const updateUserData = asyncHandler(async (req, res) => {
     }
 
     // Verify ownership: ensure the logged-in user can only update their own data
-    if (user.email !== loggedInUserEmail) {
+    if (req.userData?.id !== id) {
         return errorHandler("Unauthorized: You can only update your own data.", 403, "user.controller.js");
     }
 
@@ -171,11 +173,20 @@ export const updateUserData = asyncHandler(async (req, res) => {
 });
 
 export const currentUserData = asyncHandler(async (req, res) => {
-    const userData = req.userData;
+    const user = await transactionService.inquiryBalanceHandler(req.userData?.email);
 
-    if (!userData) {
+    if (!user) {
         return errorHandler("No data found.", 404);
     }
+
+    const userData = {
+        id: user._id,
+        owner: user.owner,
+        type: user.type,
+        current_balance: user.current_balance,
+        status: user.status,
+        reference_id: user.reference_id
+    };
 
     ResponseHandler(res, "success", 200, {
         message: "Retrieve data successfully.",

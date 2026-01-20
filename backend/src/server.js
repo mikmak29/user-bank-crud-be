@@ -8,7 +8,8 @@ import express from 'express';
 
 import globalErrorHandler from "./middleware/globalErrorHandler.js";
 import errorURLHandler from './errors/errorURLHandler.js';
-import userRoute from './routes/user.routes.js';
+import userRoute from './routes/user.route.js';
+import transactionRoute from './routes/transaction.route.js';
 import connectDB from "./config/database.js";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use(compression());
 
 app.use("/api/user", userRoute); // -> route
+app.use("/api/transaction", transactionRoute);
 
 app.use(errorURLHandler); // -> Handles unexpected writing of path
 app.use(globalErrorHandler);
