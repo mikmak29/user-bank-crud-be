@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 export const accessTokenHandler = asyncHandler(async (userPayload) => {
-    return jwt.sign(userPayload, process.env.PRIVATE_ACCESS_TOKEN, { expiresIn: "20s" });
+    return jwt.sign(userPayload, process.env.PRIVATE_ACCESS_TOKEN, { expiresIn: "15m" });
 });
 
 export const refreshTokenHandler = asyncHandler(async (userPayload) => {
