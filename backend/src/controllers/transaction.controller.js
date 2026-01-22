@@ -4,12 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 import * as transactionService from '../services/transaction.service.js';
 import errorHandler from "../utils/errorHandler.js";
+import transactionSchema from '../schemas/transaction.schema.js';
 import ResponseHandler from "../utils/ResponseHandler.js";
 
 dotenv.config();
 
 export const depositMoney = asyncHandler(async (req, res) => {
-    const { type, amount } = req.body;
+    const { type, amount } = await transactionSchema.safeParseAsync(req.body);
     const userEmail = req.userData?.email;
 
     if (!type || !amount) {
@@ -18,17 +19,16 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
     const user = await transactionService.currentBalance(userEmail);
 
-    if (user) {
-        await transactionService.depositHandler(userEmail,{ 
-            type,
-            current_balance: user.current_balance + amount,
-            status: "completed",
-            reference_id: uuidv4()
-        });
-    } else {
-        return errorHandler("User not found", 404, "transaction.controller")
+    if (!user) {
+        return errorHandler("User not found", 404, "transaction.controller");
     }
 
+    await transactionService.depositHandler(userEmail, {
+        type,
+        current_balance: user.current_balance + amount,
+        status: "completed",
+        reference_id: uuidv4()
+    });
 
     ResponseHandler(res, "success", 201, {
         message: "You deposit money successfully.",
@@ -49,13 +49,17 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
 
     const user = await transactionService.currentBalance(userEmail);
 
+    if (!user) {
+        return errorHandler("User not found", 404, "transaction.controller");
+    }
+
     if (amount > user.current_balance) {
         return errorHandler("Insufficient balance.", 409, "transaction.controller");
     } else {
         amountWithdraw = user.current_balance - amount;
     }
 
-    await transactionService.withdrawalHandler( userEmail,{
+    await transactionService.withdrawalHandler(userEmail, {
         type,
         current_balance: amountWithdraw,
         status: "completed",
