@@ -14,7 +14,7 @@ const { controllers: { transaction_controller } } = FILE_NAME;
 
 export const depositMoney = asyncHandler(async (req, res) => {
     const result = await transactionSchema.safeParseAsync(req.body);
-    const userEmail = req.userData?.email;
+    const userId = req.userData?.userId;
 
     if (!result.success) {
         return errorHandler("All fields are required.", 400, transaction_controller);
@@ -22,7 +22,7 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
     const { type, amount } = result.data;
 
-    const user = await transactionService.ownerShip(userEmail);
+    const user = await transactionService.ownerShip(userId);
 
     if (!user) {
         return errorHandler("User not found", 404, transaction_controller);
@@ -30,7 +30,9 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
     const currentBalance = user.current_balance || 0;
 
-    await transactionService.depositHandler(userEmail, {
+    await transactionService.depositHandler(userId, {
+        userId,
+        owner: user.owner,
         type,
         current_balance: currentBalance + amount,
         status: "completed",
@@ -47,7 +49,7 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
 export const withdrawMoney = asyncHandler(async (req, res) => {
     const result = await transactionSchema.safeParseAsync(req.body);
-    const userEmail = req.userData?.email;
+    const userId = req.userData?.userId;
     let currentBalance = 0;
 
     if (!result.success) {
@@ -56,7 +58,7 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
 
     const { type, amount } = result.data;
 
-    const user = await transactionService.ownerShip(userEmail);
+    const user = await transactionService.ownerShip(userId);
 
     if (!user) {
         return errorHandler("User not found", 404, transaction_controller);
@@ -70,7 +72,9 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
         currentBalance = user_balance - amount;
     }
 
-    await transactionService.withdrawalHandler(userEmail, {
+    await transactionService.withdrawalHandler(userId, {
+        userId,
+        owner: user.owner,
         type,
         current_balance: currentBalance,
         status: "completed",
@@ -87,7 +91,7 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
 
 export const transferMoney = asyncHandler(async (req, res) => {
     const result = await transactionSchema.safeParseAsync(req.body);
-    const userEmail = req.userData?.email;
+    const userId = req.userData?.userId;
     let currentBalance = 0;
 
     if (!result.success) {
@@ -96,7 +100,7 @@ export const transferMoney = asyncHandler(async (req, res) => {
 
     const { type, amount, transferTo } = result.data;
 
-    const user = await transactionService.ownerShip(userEmail);
+    const user = await transactionService.ownerShip(userId);
     const receiver = await transactionService.ownerShip(transferTo);
 
     if (!user || !receiver) {
@@ -112,7 +116,9 @@ export const transferMoney = asyncHandler(async (req, res) => {
         currentBalance = user_balance - amount;
     }
 
-    await transactionService.transferHandler(userEmail, {
+    await transactionService.transferHandler(userId, {
+        userId,
+        owner: user.owner,
         type,
         current_balance: currentBalance,
         status: "completed",
@@ -121,7 +127,11 @@ export const transferMoney = asyncHandler(async (req, res) => {
     });
 
     await transactionService.transferReceiverHandler(transferTo, {
+        userId: transferTo,
+        owner: receiver.owner,
+        type: "deposit",
         current_balance: receiver_balance + amount,
+        status: "completed",
         reference_id: uuidv4()
     });
 

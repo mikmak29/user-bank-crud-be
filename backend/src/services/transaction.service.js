@@ -4,40 +4,42 @@ export const createData = async (data) => {
     return await Transaction.create(data);
 };
 
-export const depositHandler = async (userEmail, updateData) => {
+export const depositHandler = async (userId, updateData) => {
     return await Transaction.findOneAndUpdate(
-        { owner: userEmail },
+        { userId },
         updateData,
         { upsert: true, new: true }
     );
 };
 
-export const withdrawalHandler = async (userEmail, updateData) => {
+export const withdrawalHandler = async (userId, updateData) => {
     return await Transaction.findOneAndUpdate(
-        { owner: userEmail },
+        { userId },
         updateData,
         { new: true }
     );
 };
 
-export const transferHandler = async (userEmail, updateData) => {
-    return await Transaction.findOneAndUpdate({ owner: userEmail },
+export const transferHandler = async (userId, updateData) => {
+    return await Transaction.findOneAndUpdate(
+        { userId },
         updateData,
         { new: true }
     );
 };
 
-export const transferReceiverHandler = async (userEmail, updateData) => {
-    return await Transaction.findOneAndUpdate({ owner: userEmail },
+export const transferReceiverHandler = async (userId, updateData) => {
+    return await Transaction.findOneAndUpdate(
+        { userId },
         updateData,
         { new: true }
     );
 };
 
-export const inquiryBalanceHandler = async (userEmail) => {
-    return await Transaction.findOne({ owner: userEmail });
+export const inquiryBalanceHandler = async (userId) => {
+    return await Transaction.findOne({ userId });
 };
 
-export const ownerShip = async (userEmail) => {
-    return await Transaction.findOne({ owner: userEmail });
+export const ownerShip = async (userId) => {
+    return await Transaction.findOne({ userId });
 };
