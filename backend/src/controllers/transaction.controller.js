@@ -3,29 +3,36 @@ import asyncHandler from "express-async-handler";
 import { v4 as uuidv4 } from 'uuid';
 
 import * as transactionService from '../services/transaction.service.js';
+import { FILE_NAME } from "../constants/FILE_NAME.js";
 import errorHandler from "../utils/errorHandler.js";
 import transactionSchema from '../schemas/transaction.schema.js';
 import ResponseHandler from "../utils/ResponseHandler.js";
 
 dotenv.config();
 
+const { controllers: { transaction_controller } } = FILE_NAME;
+
 export const depositMoney = asyncHandler(async (req, res) => {
-    const { type, amount } = await transactionSchema.safeParseAsync(req.body);
+    const result = await transactionSchema.safeParseAsync(req.body);
     const userEmail = req.userData?.email;
 
-    if (!type || !amount) {
-        return errorHandler("All fields are required.", 409, "transaction.controller");
+    if (!result.success) {
+        return errorHandler("All fields are required.", 400, transaction_controller);
     }
 
-    const user = await transactionService.currentBalance(userEmail);
+    const { type, amount } = result.data;
+
+    const user = await transactionService.ownerShip(userEmail);
 
     if (!user) {
-        return errorHandler("User not found", 404, "transaction.controller");
+        return errorHandler("User not found", 404, transaction_controller);
     }
+
+    const currentBalance = user.current_balance || 0;
 
     await transactionService.depositHandler(userEmail, {
         type,
-        current_balance: user.current_balance + amount,
+        current_balance: currentBalance + amount,
         status: "completed",
         reference_id: uuidv4()
     });
@@ -33,35 +40,39 @@ export const depositMoney = asyncHandler(async (req, res) => {
     ResponseHandler(res, "success", 201, {
         message: "You deposit money successfully.",
         data: {
-            current_balance: amount,
+            current_balance: currentBalance + amount,
         }
     });
 });
 
 export const withdrawMoney = asyncHandler(async (req, res) => {
-    const { type, amount } = req.body;
+    const result = await transactionSchema.safeParseAsync(req.body);
     const userEmail = req.userData?.email;
-    let amountWithdraw = 0;
+    let currentBalance = 0;
 
-    if (!type || !amount) {
-        return errorHandler("All fields are required.", 409, "transaction.controller");
+    if (!result.success) {
+        return errorHandler("All fields are required", 400, transaction_controller);
     }
 
-    const user = await transactionService.currentBalance(userEmail);
+    const { type, amount } = result.data;
+
+    const user = await transactionService.ownerShip(userEmail);
 
     if (!user) {
-        return errorHandler("User not found", 404, "transaction.controller");
+        return errorHandler("User not found", 404, transaction_controller);
     }
 
-    if (amount > user.current_balance) {
-        return errorHandler("Insufficient balance.", 409, "transaction.controller");
+    const user_balance = user.current_balance || 0;
+
+    if (amount > user_balance) {
+        return errorHandler("Insufficient balance.", 409, transaction_controller);
     } else {
-        amountWithdraw = user.current_balance - amount;
+        currentBalance = user_balance - amount;
     }
 
     await transactionService.withdrawalHandler(userEmail, {
         type,
-        current_balance: amountWithdraw,
+        current_balance: currentBalance,
         status: "completed",
         reference_id: uuidv4()
     });
@@ -69,7 +80,55 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
     ResponseHandler(res, "success", 201, {
         message: "You withdraw money successfully.",
         data: {
-            current_balance: null
+            current_balance: currentBalance
+        }
+    });
+});
+
+export const transferMoney = asyncHandler(async (req, res) => {
+    const result = await transactionSchema.safeParseAsync(req.body);
+    const userEmail = req.userData?.email;
+    let currentBalance = 0;
+
+    if (!result.success) {
+        return errorHandler("All fields are required.", 400, transaction_controller);
+    }
+
+    const { type, amount, transferTo } = result.data;
+
+    const user = await transactionService.ownerShip(userEmail);
+    const receiver = await transactionService.ownerShip(transferTo);
+
+    if (!user || !receiver) {
+        return errorHandler("User not found.", 404, transaction_controller);
+    }
+
+    const user_balance = user.current_balance || 0;
+    const receiver_balance = receiver.current_balance || 0;
+
+    if (amount > user_balance) {
+        return errorHandler("Insufficient balance.", 409, transaction_controller);
+    } else {
+        currentBalance = user_balance - amount;
+    }
+
+    await transactionService.transferHandler(userEmail, {
+        type,
+        current_balance: currentBalance,
+        status: "completed",
+        transferTo: transferTo,
+        reference_id: uuidv4()
+    });
+
+    await transactionService.transferReceiverHandler(transferTo, {
+        current_balance: receiver_balance + amount,
+        reference_id: uuidv4()
+    });
+
+    ResponseHandler(res, "success", 201, {
+        message: "You transferred money successfully.",
+        data: {
+            current_balance: currentBalance
         }
     });
 });
