@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import { v4 as uuidv4 } from 'uuid';
 
 import * as transactionService from '../services/transaction.service.js';
+import * as userLogService from '../services/userLog.service.js';
 import { FILE_NAME } from "../constants/FILE_NAME.js";
 import errorHandler from "../utils/errorHandler.js";
 import transactionSchema from '../schemas/transaction.schema.js';
@@ -30,13 +31,22 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
     const currentBalance = user.current_balance || 0;
 
-    await transactionService.depositHandler(userId, {
+    const transactionData = await transactionService.depositHandler(userId, {
         userId,
         owner: user.owner,
         type,
         current_balance: currentBalance + amount,
         status: "completed",
         reference_id: uuidv4()
+    });
+
+    await userLogService.createLog({
+        userId: user.userId,
+        email: user.owner,
+        type: transactionData.type,
+        amount: amount,
+        status: transactionData.status,
+        reference_id: transactionData.reference_id
     });
 
     ResponseHandler(res, "success", 201, {
@@ -72,13 +82,22 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
         currentBalance = user_balance - amount;
     }
 
-    await transactionService.withdrawalHandler(userId, {
+    const transactionData = await transactionService.withdrawalHandler(userId, {
         userId,
         owner: user.owner,
         type,
         current_balance: currentBalance,
         status: "completed",
         reference_id: uuidv4()
+    });
+
+    await userLogService.createLog({
+        userId: user.userId,
+        email: user.owner,
+        type: transactionData.type,
+        amount: amount,
+        status: transactionData.status,
+        reference_id: transactionData.reference_id
     });
 
     ResponseHandler(res, "success", 201, {
@@ -120,22 +139,42 @@ export const transferMoney = asyncHandler(async (req, res) => {
         currentBalance = user_balance - amount;
     }
 
-    await transactionService.transferHandler(userId, {
+    const transactionSenderData = await transactionService.transferHandler(userId, {
         userId,
         owner: user.owner,
         type,
         current_balance: currentBalance,
-        status: "completed",
         transferTo: transferTo,
+        status: "completed",
         reference_id: uuidv4()
     });
 
-    await transactionService.transferReceiverHandler(receiver.userId, {
+    const transactionReceiverData = await transactionService.transferReceiverHandler(receiver.userId, {
         userId: receiver.userId,
         owner: receiver.owner,
         current_balance: receiver_balance + amount,
         status: "completed",
         reference_id: uuidv4()
+    });
+
+    await userLogService.createLog({
+        userId: user.userId,
+        email: user.owner,
+        type: transactionSenderData.type,
+        amount: amount,
+        transferTo: receiver.owner,
+        status: transactionSenderData.status,
+        reference_id: transactionSenderData.reference_id
+    });
+
+    await userLogService.createLog({
+        userId: receiver.userId,
+        email: receiver.owner,
+        type: transactionReceiverData.type,
+        amount: amount,
+        transferredFrom: user.owner,
+        status: transactionReceiverData.status,
+        reference_id: transactionReceiverData.reference_id
     });
 
     ResponseHandler(res, "success", 201, {
