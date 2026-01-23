@@ -13,7 +13,7 @@ const globalErrorHandler = (error, req, res, next) => {
 
         debug: {
             pathURL: req.originalUrl || req.url,
-            filePath: error.filePath
+            filePath: error.filePath || null
         }
     };
 
