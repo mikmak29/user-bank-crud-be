@@ -40,6 +40,10 @@ export const inquiryBalanceHandler = async (userId) => {
     return await Transaction.findOne({ userId });
 };
 
-export const ownerShip = async (userId) => {
+export const userAccount = async (userId) => {
     return await Transaction.findOne({ userId });
+};
+
+export const receiverAccount = async (owner) => {
+    return await Transaction.findOne({ owner });
 };

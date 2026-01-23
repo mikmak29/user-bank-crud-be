@@ -14,7 +14,7 @@ const { controllers: { transaction_controller } } = FILE_NAME;
 
 export const depositMoney = asyncHandler(async (req, res) => {
     const result = await transactionSchema.safeParseAsync(req.body);
-    const userId = req.userData?.userId;
+    const userId = req.userData?.id;
 
     if (!result.success) {
         return errorHandler("All fields are required.", 400, transaction_controller);
@@ -22,7 +22,7 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
     const { type, amount } = result.data;
 
-    const user = await transactionService.ownerShip(userId);
+    const user = await transactionService.userAccount(userId);
 
     if (!user) {
         return errorHandler("User not found", 404, transaction_controller);
@@ -49,7 +49,7 @@ export const depositMoney = asyncHandler(async (req, res) => {
 
 export const withdrawMoney = asyncHandler(async (req, res) => {
     const result = await transactionSchema.safeParseAsync(req.body);
-    const userId = req.userData?.userId;
+    const userId = req.userData?.id;
     let currentBalance = 0;
 
     if (!result.success) {
@@ -58,7 +58,7 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
 
     const { type, amount } = result.data;
 
-    const user = await transactionService.ownerShip(userId);
+    const user = await transactionService.userAccount(userId);
 
     if (!user) {
         return errorHandler("User not found", 404, transaction_controller);
@@ -91,7 +91,7 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
 
 export const transferMoney = asyncHandler(async (req, res) => {
     const result = await transactionSchema.safeParseAsync(req.body);
-    const userId = req.userData?.userId;
+    const userId = req.userData?.id;
     let currentBalance = 0;
 
     if (!result.success) {
@@ -100,11 +100,15 @@ export const transferMoney = asyncHandler(async (req, res) => {
 
     const { type, amount, transferTo } = result.data;
 
-    const user = await transactionService.ownerShip(userId);
-    const receiver = await transactionService.ownerShip(transferTo);
+    const user = await transactionService.userAccount(userId);
+    const receiver = await transactionService.receiverAccount(transferTo);
 
     if (!user || !receiver) {
         return errorHandler("User not found.", 404, transaction_controller);
+    }
+
+    if (user.owner === transferTo) {
+        return errorHandler("You cannot transfer by your own account.", 409, transaction_controller);
     }
 
     const user_balance = user.current_balance || 0;
@@ -126,10 +130,9 @@ export const transferMoney = asyncHandler(async (req, res) => {
         reference_id: uuidv4()
     });
 
-    await transactionService.transferReceiverHandler(transferTo, {
-        userId: transferTo,
+    await transactionService.transferReceiverHandler(receiver.userId, {
+        userId: receiver.userId,
         owner: receiver.owner,
-        type: "deposit",
         current_balance: receiver_balance + amount,
         status: "completed",
         reference_id: uuidv4()
