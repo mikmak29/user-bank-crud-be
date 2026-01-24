@@ -5,17 +5,17 @@ export const createLog = async (data) => {
 };
 
 export const fetchLogs = async () => {
-    return await UserLogModel.find();
+    return await UserLogModel.find().sort({ createdAt: -1 });
 };
 
 export const fetchLogByType = async (type) => {
-    return await UserLogModel.find({ type });
+    return await UserLogModel.find({ type }).sort({ createdAt: -1 });
 };
 
 export const fetchLogById = async (userId) => {
-    return await UserLogModel.find({ userId });
+    return await UserLogModel.find({ userId }).sort({ createdAt: -1 });
 };
 
-export const deleteLogById = async (userId) => {
-    return await UserLogModel.findOneAndDelete({ userId });
+export const deleteLogById = async (objectId) => {
+    return await UserLogModel.findOneAndDelete({ _id: objectId });
 };
