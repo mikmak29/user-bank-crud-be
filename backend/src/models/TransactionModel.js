@@ -25,9 +25,8 @@ const transactionSchema = new mongoose.Schema(
         },
         currency: {
             type: String,
-            enum: ["peso", "dollar"],
-            default: "peso",
-            required: true
+            enum: ["PesoToPeso", "PesoToDollar", "DollarToPeso"],
+            default: "PesoToPeso",
         },
         status: {
             type: String,

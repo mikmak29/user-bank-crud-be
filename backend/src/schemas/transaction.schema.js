@@ -5,7 +5,7 @@ const transactionSchema = z.object({
         errorMap: () => ({ errorMessage: "Invalid transaction." })
     }),
     amount: z.number().positive().min(0),
-    currency: z.enum(['peso', 'dollar']).default('peso'),
+    currency: z.enum(["PesoToPeso", "PesoToDollar", "DollarToPeso"]).default('PesoToPeso').nullish(),
     status: z.enum(['pending', 'completed', 'failed', 'cancelled']).default('pending'),
     transferTo: z.string().nullish()
 });

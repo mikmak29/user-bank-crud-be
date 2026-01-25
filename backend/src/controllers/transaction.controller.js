@@ -8,7 +8,7 @@ import { FILE_NAME } from "../constants/FILE_NAME.js";
 import errorHandler from "../utils/errorHandler.js";
 import transactionSchema from '../schemas/transaction.schema.js';
 import ResponseHandler from "../utils/ResponseHandler.js";
-import currencyHandler from "../utils/currencyCalculationHandler.js";
+import currencyCalculationHandler from "../helpers/currencyCalculation.js";
 
 dotenv.config();
 
@@ -54,7 +54,8 @@ export const depositMoney = asyncHandler(async (req, res) => {
     ResponseHandler(res, "success", 201, {
         message: "You deposit money successfully.",
         data: {
-            current_balance: `₱${(amount).toFixed(2)}`,
+            depositMoney: `₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            currentBalance: `₱${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         }
     });
 });
@@ -105,7 +106,8 @@ export const withdrawMoney = asyncHandler(async (req, res) => {
     ResponseHandler(res, "success", 201, {
         message: "You withdraw money successfully.",
         data: {
-            current_balance: currentBalance
+            withdrewMoney: `₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            currentBalance: `₱${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         }
     });
 });
@@ -119,7 +121,7 @@ export const transferMoney = asyncHandler(async (req, res) => {
         return errorHandler("All fields are required.", 400, transaction_controller);
     }
 
-    const { type, amount, transferTo } = result.data;
+    const { type, amount, currency, transferTo } = result.data;
 
     const user = await transactionService.userAccount(userId);
     const receiver = await transactionService.receiverAccount(transferTo);
@@ -127,6 +129,8 @@ export const transferMoney = asyncHandler(async (req, res) => {
     if (!user || !receiver) {
         return errorHandler("User not found.", 404, transaction_controller);
     }
+
+    const currencyCalculatedData = currencyCalculationHandler(amount, currency);
 
     if (user.owner === transferTo) {
         return errorHandler("You cannot transfer by your own account.", 409, transaction_controller);
@@ -138,7 +142,7 @@ export const transferMoney = asyncHandler(async (req, res) => {
     if (amount > user_balance) {
         return errorHandler("Insufficient balance.", 409, transaction_controller);
     } else {
-        currentBalance = user_balance - amount;
+        currentBalance = user_balance - currencyCalculatedData.decreasedBalance;
     }
 
     const transactionSenderData = await transactionService.transferHandler(userId, {
@@ -182,7 +186,9 @@ export const transferMoney = asyncHandler(async (req, res) => {
     ResponseHandler(res, "success", 201, {
         message: "You transferred money successfully.",
         data: {
-            current_balance: currentBalance
+            currencyType: currencyCalculatedData.currency,
+            calculatedBalance: currencyCalculatedData.calculatedBalance,
+            currentBalance: `₱${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         }
     });
 });
