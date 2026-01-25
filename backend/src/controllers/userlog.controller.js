@@ -60,14 +60,17 @@ export const getUserLogsById = asyncHandler(async (req, res) => {
 
 export const deleteUserLogById = asyncHandler(async (req, res) => {
     const id = req.params.id;
+    const userId = req.userData?.id;
 
     validateObjectId(id);
 
-    const deletedLog = await userLogService.deleteLogById(id);
+    const user = await userLogService.ownerShip(id, userId);
 
-    if (!deletedLog) {
-        return errorHandler("ID not found or invalid", 409, userlog_controller);
+    if (!user) {
+        return errorHandler("You don't have permission.", 409, userlog_controller);
     }
+
+    const deletedLog = await userLogService.deleteLogById(id, userId);
 
     ResponseHandler(res, "success", 200, {
         message: "Log deleted successfully",
