@@ -4,6 +4,9 @@ export const FILE_NAME = {
         transaction_controller: "transaction.controller",
         userlog_controller: "userlog.controller"
     },
+    helpers: {
+        currency_utils: "currency.utils"
+    },
     middlewares: {
         auth_token: "authToken"
     }

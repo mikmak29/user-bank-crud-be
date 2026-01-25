@@ -8,6 +8,7 @@ import { FILE_NAME } from "../constants/FILE_NAME.js";
 import errorHandler from "../utils/errorHandler.js";
 import transactionSchema from '../schemas/transaction.schema.js';
 import ResponseHandler from "../utils/ResponseHandler.js";
+import currencyHandler from "../utils/currencyCalculationHandler.js";
 
 dotenv.config();
 
@@ -30,12 +31,13 @@ export const depositMoney = asyncHandler(async (req, res) => {
     }
 
     const currentBalance = user.current_balance || 0;
+    const newBalance = currentBalance + amount;
 
     const transactionData = await transactionService.depositHandler(userId, {
         userId,
         owner: user.owner,
         type,
-        current_balance: currentBalance + amount,
+        current_balance: newBalance,
         status: "completed",
         reference_id: uuidv4()
     });
@@ -52,7 +54,7 @@ export const depositMoney = asyncHandler(async (req, res) => {
     ResponseHandler(res, "success", 201, {
         message: "You deposit money successfully.",
         data: {
-            current_balance: currentBalance + amount,
+            current_balance: `₱${(amount).toFixed(2)}`,
         }
     });
 });

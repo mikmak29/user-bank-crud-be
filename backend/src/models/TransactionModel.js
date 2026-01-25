@@ -23,6 +23,12 @@ const transactionSchema = new mongoose.Schema(
         transferTo: {
             type: String,
         },
+        currency: {
+            type: String,
+            enum: ["peso", "dollar"],
+            default: "peso",
+            required: true
+        },
         status: {
             type: String,
             enum: ['pending', 'completed', 'failed', 'cancelled'],
