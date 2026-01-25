@@ -67,10 +67,10 @@ export const deleteUserLogById = asyncHandler(async (req, res) => {
     const user = await userLogService.ownerShip(id, userId);
 
     if (!user) {
-        return errorHandler("You don't have permission.", 409, userlog_controller);
+        return errorHandler("No data found or you don't have permission.", 409, userlog_controller);
     }
 
-    const deletedLog = await userLogService.deleteLogById(id, userId);
+    await userLogService.deleteLogById(id, userId);
 
     ResponseHandler(res, "success", 200, {
         message: "Log deleted successfully",
