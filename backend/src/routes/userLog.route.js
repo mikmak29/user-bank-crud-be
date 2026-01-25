@@ -8,6 +8,6 @@ const route = express.Router();
 route.get("/", authToken, userLogController.getAllLogs);
 route.get("/current", authToken, userLogController.getUserLogByType);
 route.get("/user", authToken, userLogController.getUserLogsById);
-route.delete("/del/:id", userLogController.deleteUserLogById);
+route.delete("/del/:id", authToken, userLogController.deleteUserLogById);
 
 export default route;

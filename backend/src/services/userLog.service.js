@@ -16,6 +16,10 @@ export const fetchLogById = async (userId) => {
     return await UserLogModel.find({ userId }).sort({ createdAt: -1 });
 };
 
-export const deleteLogById = async (objectId) => {
-    return await UserLogModel.findOneAndDelete({ _id: objectId });
+export const deleteLogById = async (objectId, userId) => {
+    return await UserLogModel.findOneAndDelete({ _id: objectId, userId });
+};
+
+export const ownerShip = async (id, userId) => {
+    return await UserLogModel.findOne({ _id: id, userId });
 };
