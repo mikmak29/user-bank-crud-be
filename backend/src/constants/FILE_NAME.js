@@ -1,8 +1,8 @@
 export const FILE_NAME = {
 	controllers: {
-		user_controller: "user.controller",
-		transaction_controller: "transaction.controller",
-		userlog_controller: "userlog.controller",
+		USER: "user.controller",
+		TRANSACTION: "transaction.controller",
+		USER_LOG: "userlog.controller",
 	},
 	helpers: {
 		currency_utils: "currency.utils",
