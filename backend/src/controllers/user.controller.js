@@ -59,18 +59,7 @@ export const registerUserData = asyncHandler(async (req, res) => {
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
-	const { email, password } = req.body;
-
-	const user = await userService.loginUser(email);
-
-	if (!user) {
-		return errorHandler("Invalid credentials.", 401, user_controller);
-	}
-
-	const isMatch = await bcrypt.compare(password, user.password);
-	if (!isMatch) {
-		return errorHandler("Invalid credentials.", 401, user_controller);
-	}
+	const { user } = req;
 
 	const userPayload = {
 		id: user._id,

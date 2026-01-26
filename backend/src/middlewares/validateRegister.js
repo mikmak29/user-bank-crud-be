@@ -6,7 +6,7 @@ import errorHandler from "../utils/errorHandler.js";
 import { FILE_NAME } from "../constants/FILE_NAME.js";
 
 const {
-	controllers: { user_controller },
+	middlewares: { VALIDATE_REGISTER },
 } = FILE_NAME;
 
 const validateRegister = asyncHandler(async (req, res, next) => {
@@ -19,7 +19,7 @@ const validateRegister = asyncHandler(async (req, res, next) => {
 			})
 			.join(", ");
 
-		return errorHandler(formattedError, 409, user_controller);
+		return errorHandler(formattedError, 409, VALIDATE_REGISTER);
 	}
 
 	const { password } = result.data;
