@@ -14,7 +14,7 @@ import { FILE_NAME } from "../constants/FILE_NAME.js";
 dotenv.config();
 
 const {
-	controllers: { user_controller },
+	controllers: { USER },
 } = FILE_NAME;
 
 export const registerUserData = asyncHandler(async (req, res) => {
@@ -26,7 +26,7 @@ export const registerUserData = asyncHandler(async (req, res) => {
 	const validateEmail = await userService.isEmailExist(email);
 
 	if (validateEmail) {
-		return errorHandler("This Email already exists.", 409, user_controller);
+		return errorHandler("This Email already exists.", 409, USER);
 	}
 
 	res.cookie("storedUserData", userData, {
@@ -141,12 +141,12 @@ export const updateUserData = asyncHandler(async (req, res) => {
 	const user = await userService.isIdExist(id);
 
 	if (!user) {
-		return errorHandler("ID not found.", 404, user_controller);
+		return errorHandler("ID not found.", 404, USER);
 	}
 
 	// Verify ownership: ensure the logged-in user can only update their own data
 	if (req.userData?.id !== id) {
-		return errorHandler("Unauthorized: You can only update your own data.", 403, user_controller);
+		return errorHandler("Unauthorized: You can only update your own data.", 403, USER);
 	}
 
 	await userService.updateUser(id, req.body, true);
@@ -161,13 +161,13 @@ export const currentUserData = asyncHandler(async (req, res) => {
 	const userId = req.userData?.id;
 
 	if (!userId) {
-		return errorHandler("ID not found", 404, user_controller);
+		return errorHandler("ID not found", 404, USER);
 	}
 
 	const user = await transactionService.inquiryBalanceHandler(userId);
 
 	if (!user) {
-		return errorHandler("No data found.", 404, user_controller);
+		return errorHandler("No data found.", 404, USER);
 	}
 
 	const userData = {
