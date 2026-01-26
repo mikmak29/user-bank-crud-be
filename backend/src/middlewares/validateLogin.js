@@ -9,7 +9,7 @@ const {
 	middlewares: { VALIDATE_LOGIN },
 } = FILE_NAME;
 
-const validateLogin = async (req, res, next) => {
+const validateLogin = asyncHandler(async (req, res, next) => {
 	const { email, password } = req.body;
 
 	const user = await userService.loginUser(email);
@@ -26,6 +26,6 @@ const validateLogin = async (req, res, next) => {
 	req.user = user;
 
 	next();
-};
+});
 
 export default validateLogin;

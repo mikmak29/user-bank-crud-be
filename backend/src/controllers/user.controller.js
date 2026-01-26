@@ -99,48 +99,38 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const refreshToken = asyncHandler(async (req, res) => {
-	const token = req.cookies?.refreshToken;
+	const { verifyToken } = req;
 
-	if (!token) {
-		return errorHandler("Unauthorized", 401, user_controller);
-	}
+	const user = verifyToken;
 
-	try {
-		const verifyToken = jwt.verify(token, process.env.PRIVATE_REFRESH_ACCESS_TOKEN);
+	const userPayload = {
+		id: user.id,
+		email: user.email,
+		country: user.country,
+	};
 
-		const user = verifyToken;
+	const accessToken = await accessTokenHandler(userPayload);
 
-		const userPayload = {
-			id: user.id,
-			email: user.email,
-			country: user.country,
-		};
+	const refreshToken = await refreshTokenHandler(userPayload);
 
-		const accessToken = await accessTokenHandler(userPayload);
+	res.cookie("accessToken", accessToken, {
+		httpOnly: true,
+		secure: true,
+		sameSite: "strict",
+		path: "/api/user",
+	});
 
-		const refreshToken = await refreshTokenHandler(userPayload);
+	res.cookie("refreshToken", refreshToken, {
+		httpOnly: true,
+		secure: true,
+		sameSite: "strict",
+		path: "/api/user/refreshToken",
+	});
 
-		res.cookie("accessToken", accessToken, {
-			httpOnly: true,
-			secure: true,
-			sameSite: "strict",
-			path: "/api/user",
-		});
-
-		res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-			secure: true,
-			sameSite: "strict",
-			path: "/api/user/refreshToken",
-		});
-
-		ResponseHandler(res, "success", 200, {
-			message: "Refresh token successfully.",
-			data: null,
-		});
-	} catch (error) {
-		return errorHandler(error.message, 401, user_controller);
-	}
+	ResponseHandler(res, "success", 200, {
+		message: "Refresh token successfully.",
+		data: null,
+	});
 });
 
 export const updateUserData = asyncHandler(async (req, res) => {

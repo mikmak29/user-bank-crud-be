@@ -11,5 +11,6 @@ export const FILE_NAME = {
 		auth_token: "authToken",
 		VALIDATE_REGISTER: "validateRegister",
 		VALIDATE_LOGIN: "validateLogin",
+		VALIDATE_REFRESHTOKEN: "validateRefreshToken",
 	},
 };
