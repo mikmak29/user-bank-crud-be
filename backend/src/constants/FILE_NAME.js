@@ -5,7 +5,7 @@ export const FILE_NAME = {
 		USER_LOG: "userlog.controller",
 	},
 	helpers: {
-		currency_utils: "currency.utils",
+		CURRENCY: "currencyCalculationHandler",
 	},
 	middlewares: {
 		auth_token: "authToken",
