@@ -9,9 +9,7 @@ export const FILE_NAME = {
 	},
 	middlewares: {
 		auth_token: "authToken",
-		VALIDATE_REGISTER: "validateRegister",
-		VALIDATE_LOGIN: "validateLogin",
-		VALIDATE_REFRESHTOKEN: "validateRefreshToken",
+		VALIDATE_USER: "validateUser",
 		VALIDATE_TRANSACTION: "validateTransaction",
 	},
 };

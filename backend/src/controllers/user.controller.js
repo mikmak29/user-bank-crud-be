@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import asyncHandler from "express-async-handler";
 import { v4 as uuidv4 } from "uuid";
 
@@ -9,8 +8,6 @@ import ResponseHandler from "../utils/ResponseHandler.js";
 import { accessTokenHandler, refreshTokenHandler } from "../utils/accessToken.js";
 import validateObjectId from "../utils/validateObjectId.js";
 import { FILE_NAME } from "../constants/FILE_NAME.js";
-
-dotenv.config();
 
 const {
 	controllers: { USER },
