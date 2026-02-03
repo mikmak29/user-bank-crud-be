@@ -90,6 +90,7 @@ export const transferMoney = asyncHandler(async (req, res) => {
 	const transactionReceiverData = await transactionService.transferReceiverHandler(receiver.userId, {
 		userId: receiver.userId,
 		owner: receiver.owner,
+		type,
 		current_balance: receiverCurrentBalance + amount,
 		status: "completed",
 		reference_id: uuidv4(),

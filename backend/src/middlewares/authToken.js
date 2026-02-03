@@ -24,10 +24,12 @@ const authToken = (req, res, next) => {
 			country: decoded.country,
 		};
 
-		console.log(decoded);
 		req.userData = userPayload;
 		next();
 	} catch (error) {
+		if (error.name === "TokenExpiredError") {
+			return next(errorHandler("Your session has expired. Please log in again.", 401, AUTH_TOKEN));
+		}
 		next(error);
 	}
 };
