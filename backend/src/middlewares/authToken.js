@@ -22,6 +22,7 @@ const authToken = (req, res, next) => {
 			id: decoded.id,
 			email: decoded.email,
 			country: decoded.country,
+			role: decoded.role,
 		};
 
 		req.userData = userPayload;

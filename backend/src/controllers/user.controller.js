@@ -15,10 +15,10 @@ const {
 
 export const registerUserData = asyncHandler(async (req, res) => {
 	const {
-		data: { email, hashedPassword, country },
+		data: { email, hashedPassword, country, role },
 	} = req;
 
-	const userData = { email, country };
+	const userData = { email, country, role };
 	const validateEmail = await userService.isEmailExist(email);
 
 	if (validateEmail) {
@@ -36,6 +36,7 @@ export const registerUserData = asyncHandler(async (req, res) => {
 		email,
 		password: hashedPassword,
 		country,
+		role,
 		isActive: true,
 	});
 
@@ -61,6 +62,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 		id: user._id,
 		email: user.email,
 		country: user.country,
+		role: user.role,
 	};
 
 	const accessToken = await accessTokenHandler(userPayload);

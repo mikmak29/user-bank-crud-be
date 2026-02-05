@@ -28,12 +28,13 @@ export const validateRegister = asyncHandler(async (req, res, next) => {
 	const hashedPassword = await bcrypt.hash(password, 10);
 
 	const userData = result.data;
-	const { email, country } = userData; // Extract all the data, password is excluded
+	const { email, country, role } = userData; // Extract all the data, password is excluded
 
 	const data = {
 		email,
 		hashedPassword,
 		country,
+		role,
 	};
 
 	req.data = data;
