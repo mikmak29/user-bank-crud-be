@@ -1,17 +1,18 @@
-import dotenv from 'dotenv';
-import helmet from 'helmet';
-import cors from 'cors';
-import asyncHandler from 'express-async-handler';
-import cookie from 'cookie-parser';
-import compression from 'compression';
-import express from 'express';
+import dotenv from "dotenv";
+import helmet from "helmet";
+import cors from "cors";
+import asyncHandler from "express-async-handler";
+import cookie from "cookie-parser";
+import compression from "compression";
+import express from "express";
 
 import globalErrorHandler from "./middlewares/globalErrorHandler.js";
-import errorURLHandler from './errors/errorURLHandler.js';
-import userRoute from './routes/user.route.js';
-import transactionRoute from './routes/transaction.route.js';
-import userLogRoute from './routes/userLog.route.js';
+import errorURLHandler from "./errors/errorURLHandler.js";
+import userRoute from "./routes/user.route.js";
+import transactionRoute from "./routes/transaction.route.js";
+import userLogRoute from "./routes/userLog.route.js";
 import connectDB from "./config/database.js";
+import rateLimiter from "./helpers/rateLimit.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(cookie());
 app.use(express.json());
 app.use(compression());
 
+app.use(rateLimiter);
 app.use("/api/user", userRoute); // -> route
 app.use("/api/transaction", transactionRoute);
 app.use("/api/logs", userLogRoute);
