@@ -9,7 +9,7 @@ const route = express.Router();
 
 route.get("/admin", authToken, authRole("Admin"), userLogController.getAllUserLogsADMIN);
 route.get("/current/admin", authToken, authRole("Admin"), validateUserLogByType, userLogController.getUserLogByTypeADMIN);
-route.get("/user", authToken, authRole("Admin", "Manager", "Client"), validateUserLogsById, userLogController.getUserLogsById);
+route.get("/user/:id", authToken, authRole("Admin", "Manager", "Client"), validateUserLogsById, userLogController.getUserLogsById);
 route.delete("/del/:id", authToken, authRole("Admin"), validateDeleteUserLogById, userLogController.deleteUserLogById);
 
 export default route;

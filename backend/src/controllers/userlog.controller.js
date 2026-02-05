@@ -24,9 +24,11 @@ export const getUserLogByTypeADMIN = asyncHandler(async (req, res) => {
 });
 
 export const getUserLogsById = asyncHandler(async (req, res) => {
-	const { data: id } = req;
+	const {
+		data: { id, userId },
+	} = req;
 
-	const logsData = await userLogService.fetchLogById(id);
+	const logsData = await userLogService.fetchLogById(id, userId);
 
 	ResponseHandler(res, "success", 200, {
 		message: "Retrieved logs",

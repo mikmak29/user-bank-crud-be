@@ -2,7 +2,6 @@ const authRole = (...roles) => {
 	return (req, res, next) => {
 		const data = req.userData;
 
-		console.log(req.userData);
 		if (!data?.role || !roles.includes(data.role)) {
 			return res.status(403).json({ message: "Unauthorized or access denied!" });
 		}

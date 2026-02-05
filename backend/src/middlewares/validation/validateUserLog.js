@@ -21,13 +21,15 @@ export const validateUserLogByType = asyncHandler(async (req, res, next) => {
 });
 
 export const validateUserLogsById = asyncHandler(async (req, res, next) => {
-	const id = req.userData?.id;
+	const id = req.params?.id;
+	const userId = req.userData?.id;
 
-	if (!id) {
-		return errorHandler("ID not found.", 409, VALIDATE_USER_LOG);
-	}
+	validateObjectId(id);
 
-	req.data = id;
+	req.data = {
+		id,
+		userId,
+	};
 	next();
 });
 
