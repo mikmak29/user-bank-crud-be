@@ -1,5 +1,8 @@
+export const DEFAULT_ROUTE = {
+	default_url: "/api/user/userData",
+};
+
 export const USER_ROUTE = {
-	default: "/register",
 	register: "/register",
 	login: "/login",
 	refreshToken: "/refreshToken",

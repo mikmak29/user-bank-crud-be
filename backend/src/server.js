@@ -7,7 +7,7 @@ import compression from "compression";
 import express from "express";
 
 import globalErrorHandler from "./middlewares/globalErrorHandler.js";
-import errorURLHandler from "./errors/errorURLHandler.js";
+import redirectURL from "./middlewares/redirectURL.js";
 import userRoute from "./routes/user.route.js";
 import transactionRoute from "./routes/transaction.route.js";
 import userLogRoute from "./routes/userLog.route.js";
@@ -30,7 +30,7 @@ app.use("/api/user", userRoute); // -> route
 app.use("/api/transaction", transactionRoute);
 app.use("/api/logs", userLogRoute);
 
-app.use(errorURLHandler); // -> Handles unexpected writing of url
+app.use(redirectURL); // -> Handles unexpected writing of url
 app.use(globalErrorHandler);
 
 const serverStarter = asyncHandler(async () => {
